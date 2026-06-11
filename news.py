@@ -13,9 +13,6 @@ from email.mime.text import MIMEText
 # -------------------------
 EMAIL = os.environ["EMAIL"]
 APP_PASSWORD = os.environ["APP_PASSWORD"]
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
-
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def clean_text(text):
@@ -67,26 +64,25 @@ raw_headlines = "\n".join(headlines[:15])
 # -------------------------
 summary_lines = []
 
-if OPENAI_API_KEY:
-    from openai import OpenAI
+summary_lines = []
 
-    client = OpenAI(api_key=OPENAI_API_KEY)
+try:
+    if OPENAI_API_KEY:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
 
-    prompt = f"""
-Summarize these tech headlines into 8–10 bullet points:
+        response = client.responses.create(
+            model="gpt-5-mini",
+            input=f"Summarize:\n{raw_headlines}"
+        )
 
-{raw_headlines}
-"""
+        summary_lines = response.output_text.split("\n")
 
-    response = client.responses.create(
-        model="gpt-5-mini",
-        input=prompt
-    )
+    else:
+        raise Exception("No API key")
 
-    summary_lines = response.output_text.split("\n")
-
-else:
-    print("No OpenAI key found → using FREE fallback summarizer")
+except Exception as e:
+    print("AI failed → switching to free mode:", e)
     summary_lines = free_summarizer(headlines)
     
 # -------------------------
