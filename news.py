@@ -15,6 +15,8 @@ EMAIL = os.environ["EMAIL"]
 APP_PASSWORD = os.environ["APP_PASSWORD"]
 
 
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
+
 def clean_text(text):
     text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
     return text.lower()
@@ -62,26 +64,36 @@ raw_headlines = "\n".join(headlines[:15])
 # -------------------------
 # AI SUMMARY
 # -------------------------
-prompt = f"""
-Summarize the following tech news into 8–10 bullet points.
-Focus on AI, cloud, cybersecurity, DevOps.
+summary_lines = []
 
-News:
+if OPENAI_API_KEY:
+    from openai import OpenAI
+
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+    prompt = f"""
+Summarize these tech headlines into 8–10 bullet points:
+
 {raw_headlines}
 """
 
-response = client.responses.create(
-    model="gpt-5-mini",
-    input=prompt
-)
+    response = client.responses.create(
+        model="gpt-5-mini",
+        input=prompt
+    )
 
-summary_text = response.output_text
+    summary_lines = response.output_text.split("\n")
 
-# Convert bullets into HTML
+else:
+    print("No OpenAI key found → using FREE fallback summarizer")
+    summary_lines = free_summarizer(headlines)
+
 summary_html = "<ul>"
-for line in summary_text.split("\n"):
+
+for line in summary_lines:
     if line.strip():
         summary_html += f"<li>{line}</li>"
+
 summary_html += "</ul>"
 
 # -------------------------
