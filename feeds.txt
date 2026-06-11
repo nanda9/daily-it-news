@@ -1,0 +1,6 @@
+https://feeds.feedburner.com/oreilly/radar
+https://techcrunch.com/category/artificial-intelligence/feed/
+https://aws.amazon.com/blogs/aws/feed/
+https://kubernetes.io/feed.xml
+https://www.thehackernews.com/feeds/posts/default
+https://openai.com/news/rss.xml
