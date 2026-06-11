@@ -62,29 +62,28 @@ raw_headlines = "\n".join(headlines[:15])
 # -------------------------
 # AI SUMMARY
 # -------------------------
-summary_lines = []
+prompt = f"""
+Summarize the following tech news into 8–10 bullet points.
+Focus on AI, cloud, cybersecurity, DevOps.
 
-summary_lines = []
+News:
+{raw_headlines}
+"""
 
-try:
-    if OPENAI_API_KEY:
-        from openai import OpenAI
-        client = OpenAI(api_key=OPENAI_API_KEY)
+response = client.responses.create(
+    model="gpt-5-mini",
+    input=prompt
+)
 
-        response = client.responses.create(
-            model="gpt-5-mini",
-            input=f"Summarize:\n{raw_headlines}"
-        )
+summary_text = response.output_text
 
-        summary_lines = response.output_text.split("\n")
+# Convert bullets into HTML
+summary_html = "<ul>"
+for line in summary_text.split("\n"):
+    if line.strip():
+        summary_html += f"<li>{line}</li>"
+summary_html += "</ul>"
 
-    else:
-        raise Exception("No API key")
-
-except Exception as e:
-    print("AI failed → switching to free mode:", e)
-    summary_lines = free_summarizer(headlines)
-    
 # -------------------------
 # STOCK DATA
 # -------------------------
